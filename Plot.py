@@ -1,3 +1,3 @@
-from datetime import datetime
-now = datetime.now()
-display(now.strftime("%m/%d/%Y, %H:%M:%S"))
+import streamlit as st
+
+st.write(""" # Hello World """)
