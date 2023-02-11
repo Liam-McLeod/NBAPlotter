@@ -1,42 +1,92 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+import matplotlib.pyplot as plt
 from nba_api.stats.static import players
 from nba_api.stats.static import teams
 from nba_api.stats.endpoints import playercareerstats
 from nba_api.stats.endpoints import teamyearbyyearstats
 
-def plotData(df,stat_input,format,x_axis):
-    if format == "Line Graph":
-        st.line_chart(df, x=x_axis, y=stat_input)
-    elif format == "Bar Graph":
-        st.bar_chart(df, x=x_axis, y=stat_input)
-    else:
-        new_df = df[[x_axis,stat_input]]
-        st.write(new_df)
+def getList(dict,input_list):
+    list = []
+    for input in input_list:
+        # REMOVE WHITESPACE
+        input = input.strip()
+        for name in dict:
+            if name['full_name'].lower() == input.lower():
+                list.append(name)
+    return list
+
+
+def plotData(Data,stat_input,format,x_axis):
+
+    # GRAPH
+    if format == "Line Graph" or format == "Bar Graph":
+        
+        fig = plt.Figure(figsize = (5, 5), dpi = 100)
+        ax = fig.add_subplot(111)
+
+        for name, df in Data.items():
+            if df[stat_input].isnull().all():
+                # NO DATA FOR STAT INPUT (eg. Bill Russell BLK)
+                st.error('No data found for Stat: '+ stat_input + ' For: ' + name, icon="🚨")
+                return
+
+            #1960-61 BECOMES 1961 --- 2004-05 BECOMES 2005
+            df[x_axis] = df[x_axis].apply(lambda x: int(x[:4])+1)
+
+            # LINE GRAPH
+            if format == "Line Graph":
+                # PLOT STAT FROM DATAFRAME AND LABEL EACH LINE WITH NAME
+                df.plot(kind='line',x=x_axis,y=stat_input,label=name,ax=ax)
+
+            # BAR GRAPH
+            if format == "Bar Graph":
+                # PLOT STAT FROM DATAFRAME AND LABEL EACH BAR GROUP WITH NAME
+                ax.bar(df[x_axis],df[stat_input],label=name)
+        ax.legend()
+        # FINAL PLOT
+        st.pyplot(fig)
+
+    # TABLE
+    elif format == "Table":
+        counter = 1
+        final_df = pd.DataFrame()
+        for name,df in Data.items():
+            # INSERT SEASON ID(s)
+            final_df.insert(len(final_df.columns),"SEASON_ID"+str(counter),df[x_axis])
+            # INSERT STAT INPUT
+            final_df.insert(len(final_df.columns), name+" "+stat_input,df[stat_input])
+            counter+=1
+        # DISPLAY FINAL TABLE
+        st.write(final_df)
 
 def getData():
     input_list = user_input.split(",")
-    
-    if option1 == 'Player':
-        player_dict = players.get_players()
 
-        player_list = []
-        for p in input_list:
-            for player in player_dict:
-                if player['full_name'].lower() == p.lower():
-                    player_list.append(player)
+    # PLAYER OPTION
+    if option1 == 'Player':
+
+        # LOAD ALL PLAYERS INTO DICT
+        player_dict = players.get_players()
+        # GET PLAYER LIST FROM PLAYER DICT
+        player_list = getList(player_dict,input_list)
 
         # CHECK IF PLAYERS FOUND
         if not player_list:
-            # NO PLAYER FOUND IN LIST
             st.error('No Player(s) Found', icon="🚨")
             return
+            
+        # CHECK NUMBER OF PLAYERS
+        if len(player_list) > 4:
+            st.error('Too Many Players to Compare', icon="🚨")
+            return
         
-        dataframes = []
-        for p in player_list:
+        # GET DATAFRAMES FOR ALL PLAYERS AND ADD TO DICTIONARY WITH PLAYER NAME
+        # player['fullname']:df --- (String):(Dataframe)
+        playerData = {}
+        for player in player_list:
             # PLAYER ID
-            player_id = p['id']
+            player_id = player['id']
             # API CALL GETTING PLAYER STATS FROM PLAYER ID
             data = playercareerstats.PlayerCareerStats(player_id, per_mode36='PerGame')
             if option2 == 'Regular Season':
@@ -45,35 +95,34 @@ def getData():
             elif option2 == 'Post Season':
                 # POST SEASON STATS
                 df = data.get_data_frames()[2]
-            dataframes.append(df)
+            playerData.update({player['full_name']:df})
 
+        # PLOT PLAYER DATA
+        plotData(playerData,stat_input,format,x_axis="SEASON_ID")
 
-        final_df = pd.DataFrame()
-        for df in dataframes:
-            #final_df.insert(0,df.iat[0,0],df[stat_input])
-            plotData(df,stat_input,format,x_axis="SEASON_ID")
-        #st.write(final_df)
-
+    # TEAM OPTION
     elif option1 == "Team":
         # LOAD ALL TEAMS INTO DICT
         team_dict = teams.get_teams()
+        # GET TEAM LIST
+        team_list = getList(team_dict,input_list)
 
-        team_list = []
-        for t in input_list:
-            for team in team_dict:
-                if team['full_name'].lower() == t.lower():
-                    team_list.append(team)
-
-        # CHECK IF TEAM FOUND
+        # CHECK IF TEAMS FOUND
         if not team_list:
-            # NO TEAM FOUND IN LIST
             st.error('No Team(s) Found', icon="🚨")
             return
 
-        dataframes = []
-        for t in team_list:
+        # CHECK NUMBER OF TEAMS
+        if len(team_list) > 2:
+            st.error('Too Many Teams to Compare', icon="🚨")
+            return
+
+        # GET DATAFRAMES FOR ALL TEAMS AND ADD TO DICTIONARY WITH TEAM NAME
+        # team['fullname']:df --- (String):(Dataframe)
+        teamData = {}
+        for team in team_list:
             # TEAM ID
-            team_id = t['id']
+            team_id = team['id']
             # API CALL GETTING TEAM STATS FROM TEAM ID
             data = teamyearbyyearstats.TeamYearByYearStats(team_id, per_mode_simple='PerGame')
             if option2 == 'Regular Season':
@@ -83,17 +132,14 @@ def getData():
                 # POST SEASON STATS
                 st.error('No Post Season stats for teams', icon="🚨")
                 return
-            dataframes.append(df)
+            teamData.update({team['full_name']:df})
 
-        final_df = pd.DataFrame()
-        for df in dataframes:
-            #final_df.insert(0,df.iat[0,0],df[stat_input])
-            plotData(df,stat_input,format,x_axis="YEAR")
-        #st.write(final_df)
+        # PLOT TEAM DATA
+        plotData(teamData,stat_input,format,x_axis="YEAR")
 
 # FORUM / WEB PAGE
 
-st.write(""" # NBA Stats""")
+st.write(""" # NBA Stats """)
 
 st.info('Seperate Up to four players, OR two teams with a comma', icon="ℹ️")
 
