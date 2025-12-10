@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import plotly.express as px
 from nba_api.stats.static import players
 from nba_api.stats.static import teams
 from nba_api.stats.endpoints import playercareerstats
@@ -16,53 +17,36 @@ def getList(dict,input_list):
                 list.append(name)
     return list
 
+def plotData(combined_df,stat_input,format,x_axis):
 
-def plotData(Data,stat_input,format,x_axis):
-
-    # GRAPH
     if format == "Line Graph" or format == "Bar Graph":
+
+        if combined_df[stat_input].isnull().all():
+            # NO DATA FOR STAT INPUT (eg. Bill Russell BLK)
+            st.error(f'No data found for Stat: {stat_input} for Player: {combined_df["player"].iloc[0]}', icon="🚨")
+            return
         
-        fig = plt.Figure(figsize = (5, 5), dpi = 100)
-        ax = fig.add_subplot(111)
+        if format == "Line Graph":
+            fig = px.line(combined_df, x=x_axis, y=stat_input, color='player', markers=True)
+        if format == "Bar Graph":
+            fig = px.bar(combined_df, x=x_axis, y=stat_input, color='player', barmode='group')
+        st.plotly_chart(fig)
 
-        for name, df in Data.items():
-            if df[stat_input].isnull().all():
-                # NO DATA FOR STAT INPUT (eg. Bill Russell BLK)
-                st.error('No data found for Stat: '+ stat_input + ' For: ' + name, icon="🚨")
-                return
-
-            #1960-61 BECOMES 1961 --- 2004-05 BECOMES 2005
-            df[x_axis] = df[x_axis].apply(lambda x: int(x[:4])+1)
-
-        # LINE GRAPH
-            if format == "Line Graph":
-                # PLOT STAT FROM DATAFRAME AND LABEL EACH LINE WITH NAME
-                df.plot(kind='line',x=x_axis,y=stat_input,label=name,ax=ax)
-
-            # BAR GRAPH
-            if format == "Bar Graph":
-                # PLOT STAT FROM DATAFRAME AND LABEL EACH BAR GROUP WITH NAME
-                ax.bar(df[x_axis],df[stat_input],label=name)
-        ax.legend()
-        # FINAL PLOT
-        st.pyplot(fig)
-
-    # TABLE
-    elif format == "Table":
-        counter = 1
-        final_df = pd.DataFrame()
-        for name,df in Data.items():
-            # INSERT SEASON ID(s)
-            final_df.insert(len(final_df.columns),"SEASON_ID"+str(counter),df[x_axis])
-            # INSERT STAT INPUT
-            final_df.insert(len(final_df.columns), name+" "+stat_input,df[stat_input])
-            counter+=1
-        # DISPLAY FINAL TABLE
-        st.write(final_df)
+    # elif format == "Table":
+    #     counter = 1
+    #     final_df = pd.DataFrame()
+        
+    #     # INSERT SEASON ID(s)
+    #     final_df.insert(len(final_df.columns),f"SEASON_ID{counter}",combined_df[x_axis])
+    #     # INSERT STAT INPUT
+    #     final_df.insert(len(final_df.columns), f"{combined_df['player'].iloc[0]} {stat_input}",combined_df[stat_input])
+    #     counter+=1
+    #     # DISPLAY FINAL TABLE
+    #     st.write(final_df)
 
 def getData():
     input_list = user_input.split(",")
-
+    MAX_PLAYERS = 2
     # PLAYER OPTION
     if option1 == 'Player':
 
@@ -77,7 +61,7 @@ def getData():
             return
             
         # CHECK NUMBER OF PLAYERS
-        if len(player_list) > 4:
+        if len(player_list) > MAX_PLAYERS:
             st.error('Too Many Players to Compare', icon="🚨")
             return
         
@@ -97,8 +81,17 @@ def getData():
                 df = data.get_data_frames()[2]
             playerData.update({player['full_name']:df})
 
+        # COMBINE DATAFRAMES INTO ONE DATAFRAME FOR PLOTTING
+        combined = []
+        for name, df in playerData.items():
+            tmp = df.copy()
+            tmp['player']= name
+            tmp['SEASON_ID'] = tmp["SEASON_ID"].apply(lambda x: int(x[:4]) + 1)
+            combined.append(tmp)
+
+        combined_df = pd.concat(combined, ignore_index=True)
         # PLOT PLAYER DATA
-        plotData(playerData,stat_input,format,x_axis="SEASON_ID")
+        plotData(combined_df,stat_input,format,x_axis="SEASON_ID")
 
     # TEAM OPTION
     elif option1 == "Team":
@@ -141,7 +134,7 @@ def getData():
 
 st.write(""" # NBA Stats """)
 
-st.info('Seperate Up to four players, OR two teams with a comma', icon="ℹ️")
+st.info('Seperate up to two players, OR two teams with a comma', icon="ℹ️")
 
 option1 = st.selectbox('Label',('Player','Team'),label_visibility="collapsed")
 
