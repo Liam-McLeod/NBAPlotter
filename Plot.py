@@ -13,16 +13,17 @@ def getPlayerList(player_lookup,player_input_list):
     return results
 
 def plotData(combined_df,stat_input,format,x_axis):
-
     if format == "Line Graph":
         fig = px.line(combined_df, x=x_axis, y=stat_input, color='player', markers=True)
+        st.plotly_chart(fig)
     elif format == "Bar Graph":
         fig = px.bar(combined_df, x=x_axis, y=stat_input, color='player', barmode='group')
-
-    #st.plotly_chart(fig)
+        st.plotly_chart(fig)
     elif format == "Table":
         table_df = combined_df.pivot_table(index=x_axis, columns='player', values=stat_input).reset_index()
         st.dataframe(table_df,width='stretch')
+    
+    
 
 def getPlayerStats(player_list,season_type):
     combined = []
@@ -75,7 +76,7 @@ def getData():
 
     # NO PLAYERS FOUND ERROR
     if not selected_players:
-        st.error('No Player(s) Found', icon="🚨")
+        st.error('No matching players found. Check spelling and try again.', icon="🚨")
         return
         
     # TOO MANY PLAYERS ERROR
@@ -107,6 +108,6 @@ stat_input = st.selectbox('Label',('PTS', 'REB', 'AST', 'STL','BLK','FGM','FTM')
 
 format = st.selectbox('Label',('Line Graph','Bar Graph','Table'),label_visibility="collapsed")
 
-user_input = st.text_input('Label',label_visibility='collapsed')
+user_input = st.text_input('Label',placeholder="Lebron James, Stephen Curry", label_visibility='collapsed')
 
 button = st.button('Compare',width='stretch',on_click=getData)
