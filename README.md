@@ -31,6 +31,27 @@ Users can compare up to four players using per-game averages, season totals, or 
 
 ---
 
+## 📊 Usage
+
+1. Enter player names separated by commas
+   Example: Lebron James, Stephen Curry
+2. Choose:
+   - Stat type (Averages, Totals, Cumulative Totals)
+   - Season Type (Regular Season or Playoffs)
+   - Visualization Format (Line Graph, Bar Graph, Table)
+3. View interactive comparisions across seasons.
+
+---
+
+## 🧠 Design Decisions
+
+- Player lookup optimized using a dictionary for O(1) name resolution
+- Player data combined into a single DataFrame for flexible plotting and tabular views
+- Data fetching, transformation, and visualization logic kept separate for clarity
+- Table view generated using DataFrame pivoting for clean, readable comparisons
+
+---
+
 ## 🚀 Getting Started
 
 ### Run Locally
