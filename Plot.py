@@ -15,15 +15,15 @@ def getPlayerList(player_lookup,player_input_list):
 def plotData(combined_df,stat_input,format,x_axis):
     if format == "Line Graph":
         fig = px.line(combined_df, x=x_axis, y=stat_input, color='player', markers=True)
+        fig.update_layout(title=f"{stat_input} by Season",xaxis_title="Season",yaxis_title=stat_input,legend_title="Player",hovermode="x unified")
         st.plotly_chart(fig)
     elif format == "Bar Graph":
         fig = px.bar(combined_df, x=x_axis, y=stat_input, color='player', barmode='group')
+        fig.update_layout(title=f"{stat_input} by Season",xaxis_title="Season",yaxis_title=stat_input,legend_title="Player",hovermode="x unified")
         st.plotly_chart(fig)
     elif format == "Table":
         table_df = combined_df.pivot_table(index=x_axis, columns='player', values=stat_input).reset_index()
         st.dataframe(table_df,width='stretch')
-    
-    
 
 def getPlayerStats(player_list,season_type):
     combined = []
@@ -76,12 +76,12 @@ def getData():
 
     # NO PLAYERS FOUND ERROR
     if not selected_players:
-        st.error('No matching players found. Check spelling and try again.', icon="🚨")
+        st.warning('No matching players found. Check spelling and try again.', icon="🚨")
         return
         
     # TOO MANY PLAYERS ERROR
     if len(selected_players) > MAX_INPUT:
-        st.error('Too Many Players to Compare', icon="🚨")
+        st.warning('You can compare up to 4 players at once.', icon="🚨")
         return
         
     # GET PLAYER STATS
@@ -89,7 +89,7 @@ def getData():
 
     # NO DATA FOUND ERROR (E.G. Bill Russell BLK)
     if combined_df[stat_input].isnull().all():
-        st.error(f'No data Found for {stat_input}', icon="🚨")
+        st.warning(f'No data Found for {stat_input}', icon="🚨")
         return
 
     plotData(combined_df,stat_input,format,"SEASON_ID")
