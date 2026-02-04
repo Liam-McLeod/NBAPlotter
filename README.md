@@ -57,7 +57,7 @@ Users can compare up to four players using per-game averages, season totals, or 
 
 ## 📈 Visualization Options
 
-### Line Grap h###  
+### Line Graph ###  
 Displays trends across seasons for selected players.
 
 ### Bar Graph ###  
