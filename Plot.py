@@ -100,14 +100,14 @@ st.write(""" # NBA Stat Plotter """)
 
 st.info('Seperate up to 4 players with a comma', icon="ℹ️")
 
-stat_type = st.selectbox('Label',('Averages','Totals','Totals (Cumulative)'), label_visibility="collapsed")
+stat_type = st.selectbox('Statisic Type',('Season Averages','Season Totals','Career Cumulative Totals'))
 
-season_type = st.selectbox('Label',('Regular Season','Post Season'),label_visibility="collapsed")
+season_type = st.selectbox('Season Type',('Regular Season','Post Season'),)
 
-stat_input = st.selectbox('Label',('PTS', 'REB', 'AST', 'STL','BLK','FGM','FTM'),label_visibility="collapsed")
+stat_input = st.selectbox('Statistic',('PTS', 'REB', 'AST', 'STL','BLK','FGM','FTM'))
 
-format = st.selectbox('Label',('Line Graph','Bar Graph','Table'),label_visibility="collapsed")
+format = st.selectbox('Format',('Line Graph','Bar Graph','Table'))
 
-user_input = st.text_input('Label',placeholder="Lebron James, Stephen Curry", label_visibility='collapsed')
+user_input = st.text_input('Players',placeholder="Lebron James, Stephen Curry")
 
 button = st.button('Compare',width='stretch',on_click=getData)
