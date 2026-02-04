@@ -3,6 +3,9 @@
 A Streamlit web application for comparing NBA player statistics across seasons.  
 Users can compare up to four players using per-game averages, season totals, or cumulative career totals for both regular season and playoff data.
 
+
+![App Screenshot](assets/screenshot.png)
+
 ---
 
 ## ✨ Features
@@ -54,13 +57,13 @@ Users can compare up to four players using per-game averages, season totals, or 
 
 ## 📈 Visualization Options
 
-**Line Graph**  
+### Line Grap h###  
 Displays trends across seasons for selected players.
 
-**Bar Graph**  
+### Bar Graph ###  
 Shows grouped, side-by-side comparisons for each season.
 
-**Table View**  
+### Table View ###  
 Presents season by season stats in a pivoted table format for easy comparison.
 
 ---
@@ -77,11 +80,11 @@ Presents season by season stats in a pivoted table format for easy comparison.
 ### Run Locally
 
 ```bash
-git clone <your-repo-url>
-cd <project-folder>
+git clone https://github.com/Liam-McLeod/NBAPlotter
+cd NBAPlotter
 
 python -m venv venv
 venv\Scripts\activate
 
 pip install -r requirements.txt
-streamlit run app.py
+streamlit run Plot.py
