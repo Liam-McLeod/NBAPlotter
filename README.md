@@ -36,9 +36,9 @@ Users can compare up to four players using per-game averages, season totals, or 
 1. Enter player names separated by commas
    Example: Lebron James, Stephen Curry
 2. Choose:
-   - Stat type (Averages, Totals, Cumulative Totals)
-   - Season Type (Regular Season or Playoffs)
-   - Visualization Format (Line Graph, Bar Graph, Table)
+    - Stat type (Averages, Totals, Cumulative Totals)
+    - Season Type (Regular Season or Playoffs)
+    - Visualization Format (Line Graph, Bar Graph, Table)
 3. View interactive comparisions across seasons.
 
 ---
@@ -49,6 +49,26 @@ Users can compare up to four players using per-game averages, season totals, or 
 - Player data combined into a single DataFrame for flexible plotting and tabular views
 - Data fetching, transformation, and visualization logic kept separate for clarity
 - Table view generated using DataFrame pivoting for clean, readable comparisons
+
+---
+
+## 📈 Visualization Options
+
+**Line Graph**
+Displays trends across seasons for selected players.
+
+**Bar Graph**
+Shows grouped, side-by-side comparisons for each season.
+
+**Table View**
+Presents season by season stats in a pivoted table format for easy comparison.
+
+---
+
+## 🙌 Acknowledgements
+
+- Data Provided by the NBA via the nba_api Python package.
+- Built with Streamlit and Plotly.
 
 ---
 
